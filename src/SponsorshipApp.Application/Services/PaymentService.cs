@@ -23,7 +23,13 @@ namespace SponsorshipApp.Application.Services
         public Payment ProcessNow(Guid planId)
         {
             var plan = _planRepo.GetById(planId);
-            if (plan == null) return null;
+            if (plan == null) throw new KeyNotFoundException("Sponsorship plan not found.");
+
+            if (plan.Payments.Any(p => p.Date.Date == DateTime.UtcNow.Date))
+            {
+                throw new InvalidOperationException("Duplicate payment not allowed on the same day.");
+            }
+
 
             var payment = new Payment { PlanId = planId, Amount = plan.Amount };
             plan.Payments.Add(payment);
@@ -44,7 +50,10 @@ namespace SponsorshipApp.Application.Services
         public List<Payment> GetPayments(Guid planId)
         {
             var plan = _planRepo.GetById(planId);
-            return plan?.Payments ?? new();
+            if (plan == null)
+                throw new KeyNotFoundException("Sponsorship plan not found.");
+
+            return plan.Payments;
         }
     }
 }

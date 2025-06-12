@@ -57,7 +57,7 @@ namespace SponsorshipApp.Application.Services
                     _ => 0
                 }) ?? plan.CreatedOn;
 
-                if (DateTime.UtcNow.Date >= nextDue.Date)
+                if (DateTime.UtcNow.Date >= nextDue.Date && !plan.Payments.Any(p => p.Date.Date == DateTime.UtcNow.Date))
                 {
                     var payment = new Payment { PlanId = plan.Id, Amount = plan.Amount };
 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Diagnostics;
 using SponsorshipApp.API.Background;
 using SponsorshipApp.Application.Interfaces;
 using SponsorshipApp.Application.Services;
@@ -30,6 +31,33 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseAuthorization();
+
+//Global Exception Handler (Improved Formatting)
+app.UseExceptionHandler(appBuilder =>
+{
+    appBuilder.Run(async context =>
+    {
+        context.Response.ContentType = "application/json";
+
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var ex = exceptionHandlerPathFeature?.Error;
+
+        context.Response.StatusCode = ex switch
+        {
+            KeyNotFoundException => StatusCodes.Status404NotFound,
+            ArgumentException or InvalidOperationException => StatusCodes.Status400BadRequest,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        var error = new
+        {
+            message = ex?.Message,
+            type = ex?.GetType().Name
+        };
+
+        await context.Response.WriteAsJsonAsync(error);
+    });
+});
 
 app.MapControllers();
 

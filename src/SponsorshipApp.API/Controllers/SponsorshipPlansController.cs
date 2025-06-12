@@ -36,7 +36,7 @@ namespace SponsorshipApp.API.Controllers
         public IActionResult PayNow(Guid planId)
         {
             var payment = _paymentService.ProcessNow(planId);
-            return payment == null ? NotFound() : Ok(payment);
+            return Ok(payment);
         }
 
         [HttpGet("{planId}/payments")]
